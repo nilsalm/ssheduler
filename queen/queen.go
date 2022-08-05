@@ -7,13 +7,10 @@ import (
 	// "runtime"
 	// "time"
 
-	charmfs "github.com/charmbracelet/charm/fs"
-	"github.com/nilsalm/ssheduler/common"
-)
+	"ssheduler/common"
 
-type FileSystem struct {
-	Files *charmfs.FS
-}
+	charmfs "github.com/charmbracelet/charm/fs"
+)
 
 // func ssheduler() {
 
@@ -38,7 +35,20 @@ type FileSystem struct {
 // 	}
 // }
 
-func (cfs *FileSystem) Upload_file_to_charm(local_path string, charm_path string) {
+type FileSystem struct {
+	Files *charmfs.FS
+}
+
+func GetFS() *charmfs.FS {
+	cfs, err := charmfs.NewFS()
+	if err != nil {
+		panic(err)
+	}
+
+	return cfs
+}
+
+func (cfs *FileSystem) UploadFileToCharm(local_path string, charm_path string) {
 
 	fmt.Printf("Uploading file %s to %s ... ", local_path, charm_path)
 
@@ -55,5 +65,5 @@ func (cfs *FileSystem) Upload_file_to_charm(local_path string, charm_path string
 	}
 	fmt.Println("Success!")
 
-	common.Print_file_to_screen(local_path)
+	common.PrintFileToScreen(local_path)
 }

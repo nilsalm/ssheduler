@@ -38,34 +38,34 @@ const (
 
 // func initialModel() model {
 // 	return model{}
+// // }
+
+// type model struct {
+// 	state      applicationState
+// 	viewState  viewState
+// 	list       tea.Model // ?
+// 	action     tea.Model // ?
+// 	pages      []string
+// 	activePage string
+// 	cursor     int
+// 	windowSize tea.WindowSizeMsg
 // }
 
-type model struct {
-	state      applicationState
-	viewState  viewState
-	list       tea.Model // ?
-	action     tea.Model // ?
-	pages      []string
-	activePage string
-	cursor     int
-	windowSize tea.WindowSizeMsg
-}
+// func (m model) Init() tea.Cmd {
+// 	return nil
+// }
 
-func (m model) Init() tea.Cmd {
-	return nil
-}
+// func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+// 	switch msg := msg.(type) {
+// 	case tea.KeyMsg:
+// 		switch msg.String() {
+// 		case "ctrl+c":
+// 			return m, tea.Quit
+// 		}
+// 	}
+// 	return m, nil
+// }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c":
-			return m, tea.Quit
-		}
-	}
-	return m, nil
-}
-
-func (m model) View() string {
-	return "Press Ctrl+C to exit"
-}
+// func (m model) View() string {
+// 	return "Press Ctrl+C to exit"
+// }

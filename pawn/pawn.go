@@ -14,7 +14,16 @@ type FileSystem struct {
 	Files *charmfs.FS
 }
 
-func (cfs *FileSystem) download_file_from_charm(local_path string, charm_path string) {
+func GetFS() *charmfs.FS {
+	cfs, err := charmfs.NewFS()
+	if err != nil {
+		panic(err)
+	}
+
+	return cfs
+}
+
+func (cfs *FileSystem) DownloadFileFromCharm(local_path string, charm_path string) {
 
 	fmt.Printf("Downloading file from %s to %s ... ", charm_path, local_path)
 	// Get a file from the DB
@@ -36,11 +45,11 @@ func (cfs *FileSystem) download_file_from_charm(local_path string, charm_path st
 	fmt.Println("Success!")
 }
 
-func mark_job_as_done(charm_path string) {
+func (cfs *FileSystem) MarkJobAsDone(charm_path string) {
 	// TODO
 }
 
-func execute_cmd_file(path string) []byte {
+func ExecuteCmdFile(path string) []byte {
 	fmt.Println("Executing ", path)
 	// Execute the file
 	out, err := exec.Command(path).Output()
