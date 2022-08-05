@@ -6,14 +6,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// func main() {
-// 	err := tea.NewProgram(initialModel(), tea.WithAltScreen()).Start()
-// 	if err != nil {
-// 		fmt.Fprintln(os.Stderr, err)
-// 		os.Exit(1)
-// 	}
-// }
-
 func New() model {
 	return model{
 		choices: []string{"Queen", "Pawn"},

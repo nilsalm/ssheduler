@@ -2,12 +2,12 @@ package queen
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
 
 	// "runtime"
 	// "time"
-
-	"ssheduler/common"
 
 	charmfs "github.com/charmbracelet/charm/fs"
 )
@@ -48,9 +48,9 @@ func GetFS() *charmfs.FS {
 	return cfs
 }
 
-func (cfs *FileSystem) UploadFileToCharm(local_path string, charm_path string) {
+func (cfs *FileSystem) UploadFileToCharm(local_path string, charm_path string) string {
 
-	fmt.Printf("Uploading file %s to %s ... ", local_path, charm_path)
+	status := fmt.Sprintf("Uploading file %s to %s ... ", local_path, charm_path)
 
 	// Load the prepared file with commands and magic
 	file, err := os.Open(local_path)
@@ -63,7 +63,22 @@ func (cfs *FileSystem) UploadFileToCharm(local_path string, charm_path string) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Success!")
+	status += "Success!\n"
+	return status
+}
 
-	common.PrintFileToScreen(local_path)
+func BrowseCommands() []string {
+	files, err := ioutil.ReadDir("cmds/")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var availableCmds []string
+	for _, file := range files {
+
+		if file.IsDir() == false {
+			availableCmds = append(availableCmds, "cmds/"+file.Name())
+		}
+	}
+	return availableCmds
 }
