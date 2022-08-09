@@ -50,7 +50,6 @@ func main() {
 func initialModel() model {
 	mode := common.GetMode()
 	return model{
-		fs:     nil,
 		mode:   mode,
 		queen:  queenui.New(),
 		pawn:   pawnui.New(),

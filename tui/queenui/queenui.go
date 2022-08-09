@@ -1,18 +1,37 @@
 package queenui
 
 import (
-	"fmt"
 	"ssheduler/tui/registerpawnui"
 	"ssheduler/tui/scheduleui"
+
+	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/lipgloss"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+var docStyle = lipgloss.NewStyle().Margin(1, 2)
+
+type item struct {
+	title, desc string
+}
+
+func (i item) Title() string       { return i.title }
+func (i item) Description() string { return i.desc }
+func (i item) FilterValue() string { return i.title }
+
 func New() model {
-	return model{
-		cursor:  0,
-		choices: []string{"Schedule Command", "Register Pawn"},
+	items := []list.Item{
+		item{title: "Schedule Command", desc: "Choose a shell-file and submit it to the pawns"},
+		item{title: "Register new Pawn", desc: "Add a new pawn to your queen"},
 	}
+
+	m := model{
+		cursor: 0,
+		list:   list.New(items, list.NewDefaultDelegate(), 0, 0),
+	}
+	m.list.Title = "Choose an option"
+	return m
 }
 
 type State int
@@ -25,10 +44,10 @@ const (
 
 type model struct {
 	cursor   int
-	choices  []string
 	schedule tea.Model
 	register tea.Model
 	state    State
+	list     list.Model
 }
 
 func (m model) Init() tea.Cmd {
@@ -40,6 +59,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 	switch msg.(type) {
 	case scheduleui.BackMsg:
+		m.state = choosing
+	case scheduleui.SelectMsg:
 		m.state = choosing
 	}
 
@@ -54,18 +75,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmd = newCmd
 	case choosing:
 		switch msg := msg.(type) {
+		case tea.WindowSizeMsg:
+			h, v := docStyle.GetFrameSize()
+			m.list.SetSize(msg.Width-h, msg.Height-v)
 		case tea.KeyMsg:
 			switch msg.String() {
 			case "q":
 				return m, tea.Quit
-			case "up", "k":
-				if m.cursor > 0 {
-					m.cursor--
-				}
-			case "down", "j":
-				if m.cursor < len(m.choices)-1 {
-					m.cursor++
-				}
 			}
 			switch msg.Type {
 			case tea.KeyEnter:
@@ -79,32 +95,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	}
-
+	cmds = append(cmds, cmd)
+	m.list, cmd = m.list.Update(msg)
 	cmds = append(cmds, cmd)
 	return m, tea.Batch(cmds...)
-
 }
 
 func (m model) View() string {
-	var s string
-	var c string
-
 	switch m.state {
-	case choosing:
-		s += "Please choose an option:\n"
-		for i, choice := range m.choices {
-			if i == m.cursor {
-				c = ">"
-			} else {
-				c = " "
-			}
-			s += fmt.Sprintf("%s %s\n", c, choice)
-		}
 	case register:
 		return m.register.View()
 	case schedule:
 		return m.schedule.View()
+	case choosing:
+		return docStyle.Render(m.list.View())
+	default: // choosing
+		return docStyle.Render(m.list.View())
 	}
-	s += "Press q to exit"
-	return s
 }

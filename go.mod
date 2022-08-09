@@ -2,11 +2,14 @@ module ssheduler
 
 go 1.18
 
+require gopkg.in/yaml.v3 v3.0.1
+
 require (
+	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/caarlos0/env/v6 v6.9.1 // indirect
 	github.com/caarlos0/sshmarshal v0.0.0-20220308164159-9ddb9f83c6b3 // indirect
 	github.com/calmh/randomart v1.1.0 // indirect
-	github.com/charmbracelet/bubbles v0.10.3 // indirect
+	github.com/charmbracelet/bubbles v0.13.0 // indirect
 	github.com/charmbracelet/bubbletea v0.22.0 // indirect
 	github.com/charmbracelet/charm v0.12.1 // indirect
 	github.com/charmbracelet/keygen v0.3.0 // indirect
@@ -26,8 +29,8 @@ require (
 	github.com/muesli/sasquatch v0.0.0-20200811221207-66979d92330a // indirect
 	github.com/muesli/termenv v0.11.1-0.20220212125758-44cd13922739 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/sahilm/fuzzy v0.1.0 // indirect
 	golang.org/x/crypto v0.0.0-20220307211146-efcb8507fb70 // indirect
 	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
-	gopkg.in/yaml.v3 v3.0.1
 )

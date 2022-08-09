@@ -13,6 +13,7 @@ func New() model {
 		availableCmds: queen.BrowseCommands(),
 		qfs:           &queen.FileSystem{Files: queen.GetFS()},
 		execOut:       "",
+		debug:         "debug",
 	}
 }
 
@@ -21,6 +22,7 @@ type model struct {
 	availableCmds []string
 	qfs           *queen.FileSystem
 	execOut       string
+	debug         string
 }
 
 func (m model) Init() tea.Cmd {
@@ -32,6 +34,12 @@ type SelectMsg struct {
 	CmdPath string
 }
 type BackMsg bool
+
+func returnBackCmd() tea.Cmd {
+	return func() tea.Msg {
+		return BackMsg(true)
+	}
+}
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -50,10 +58,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		switch msg.Type {
-		case tea.KeyEscape:
-			return m, func() tea.Msg {
-				return BackMsg(true)
-			}
+		case tea.KeyBackspace:
+			m.debug = "BACKMSG"
+			return m, returnBackCmd()
 
 		case tea.KeyEnter:
 			p := m.availableCmds[m.cursor]
@@ -82,6 +89,7 @@ func (m model) View() string {
 		s += fmt.Sprintf("%s %s\n", c, choice)
 	}
 	s += fmt.Sprintf("%s", m.execOut)
+	s += fmt.Sprintf("%s", m.debug)
 	s += "Press q to exit"
 	return s
 }
