@@ -12,26 +12,12 @@ import (
 
 var docStyle = lipgloss.NewStyle().Margin(1, 2)
 
-type item struct {
-	title, desc string
-}
-
-func (i item) Title() string       { return i.title }
-func (i item) Description() string { return i.desc }
-func (i item) FilterValue() string { return i.title }
-
-func New() model {
-	items := []list.Item{
-		item{title: "Schedule Command", desc: "Choose a shell-file and submit it to the pawns"},
-		item{title: "Register new Pawn", desc: "Add a new pawn to your queen"},
-	}
-
-	m := model{
-		cursor: 0,
-		list:   list.New(items, list.NewDefaultDelegate(), 0, 0),
-	}
-	m.list.Title = "Choose an option"
-	return m
+type model struct {
+	schedule   tea.Model
+	register   tea.Model
+	state      State
+	list       list.Model
+	windowSize tea.WindowSizeMsg
 }
 
 type State int
@@ -42,12 +28,27 @@ const (
 	register
 )
 
-type model struct {
-	cursor   int
-	schedule tea.Model
-	register tea.Model
-	state    State
-	list     list.Model
+type item struct {
+	title, desc string
+}
+
+func (i item) Title() string       { return i.title }
+func (i item) Description() string { return i.desc }
+func (i item) FilterValue() string { return i.title }
+
+func New(windowSize tea.WindowSizeMsg) model {
+	items := []list.Item{
+		item{title: "Schedule Command", desc: "Choose a shell-file and submit it to the pawns"},
+		item{title: "Register new Pawn", desc: "Add a new pawn to your queen"},
+	}
+
+	m := model{
+		list:       list.New(items, list.NewDefaultDelegate(), 0, 0),
+		windowSize: windowSize,
+	}
+	m.list.SetSize(m.windowSize.Width, m.windowSize.Height)
+	m.list.Title = "Choose an option"
+	return m
 }
 
 func (m model) Init() tea.Cmd {
@@ -76,8 +77,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case choosing:
 		switch msg := msg.(type) {
 		case tea.WindowSizeMsg:
-			h, v := docStyle.GetFrameSize()
-			m.list.SetSize(msg.Width-h, msg.Height-v)
+			m.windowSize = msg
 		case tea.KeyMsg:
 			switch msg.String() {
 			case "q":
@@ -85,10 +85,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			switch msg.Type {
 			case tea.KeyEnter:
-				if m.cursor == 0 {
-					m.schedule = scheduleui.New()
+				if m.list.Index() == 0 {
+					m.schedule = scheduleui.New(m.windowSize)
 					m.state = schedule
-				} else if m.cursor == 1 {
+				} else if m.list.Index() == 1 {
 					m.register = registerpawnui.New()
 					m.state = register
 				}

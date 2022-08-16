@@ -2,11 +2,9 @@ package main
 
 import (
 	"fmt"
-
 	"os"
 
 	common "ssheduler/common"
-	queen "ssheduler/queen"
 	"ssheduler/tui/commonui"
 	"ssheduler/tui/pawnui"
 	"ssheduler/tui/queenui"
@@ -15,11 +13,11 @@ import (
 )
 
 type model struct {
-	fs     *queen.FileSystem
-	mode   common.Mode
-	queen  tea.Model
-	pawn   tea.Model
-	common tea.Model
+	mode       common.Mode
+	queen      tea.Model
+	pawn       tea.Model
+	common     tea.Model
+	windowSize tea.WindowSizeMsg
 }
 
 // func main() {
@@ -51,8 +49,8 @@ func initialModel() model {
 	mode := common.GetMode()
 	return model{
 		mode:   mode,
-		queen:  queenui.New(),
-		pawn:   pawnui.New(),
+		queen:  nil,
+		pawn:   nil,
 		common: commonui.New(),
 	}
 }
@@ -66,6 +64,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.windowSize = msg
+		m.queen = queenui.New(m.windowSize)
+		m.pawn = pawnui.New(m.windowSize)
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q":
@@ -76,12 +78,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.Choice {
 		case 0:
 			m.mode = common.Queen
-			m.queen = queenui.New()
+			m.queen = queenui.New(m.windowSize)
 		case 1:
 			m.mode = common.Pawn
-			m.pawn = pawnui.New()
+			m.pawn = pawnui.New(m.windowSize)
 		}
 		common.SetMode(m.mode)
+		common.SaveConfig()
 	}
 
 	switch m.mode {

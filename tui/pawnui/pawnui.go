@@ -1,25 +1,16 @@
 package pawnui
 
 import (
-	"fmt"
-	"os"
-
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func main() {
-	err := tea.NewProgram(New(), tea.WithAltScreen()).Start()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-}
-
-func New() model {
+func New(windowSize tea.WindowSizeMsg) model {
 	return model{}
 }
 
-type model struct{}
+type model struct {
+	windowSize tea.WindowSizeMsg
+}
 
 func (m model) Init() tea.Cmd {
 	return nil

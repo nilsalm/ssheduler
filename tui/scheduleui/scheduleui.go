@@ -1,95 +1,123 @@
 package scheduleui
 
 import (
-	"fmt"
 	"ssheduler/queen"
 
+	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/lipgloss"
+
+	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func New() model {
-	return model{
-		cursor:        0,
-		availableCmds: queen.BrowseCommands(),
-		qfs:           &queen.FileSystem{Files: queen.GetFS()},
-		execOut:       "",
-		debug:         "debug",
-	}
-}
+var docStyle = lipgloss.NewStyle().Margin(1, 2)
 
 type model struct {
-	cursor        int
-	availableCmds []string
-	qfs           *queen.FileSystem
-	execOut       string
-	debug         string
+	qfs        *queen.FileSystem
+	execOut    string
+	list       list.Model
+	windowSize tea.WindowSizeMsg
+	spinner    spinner.Model
+	uploading  bool
 }
-
-func (m model) Init() tea.Cmd {
-	return nil
-}
-
 type SelectMsg struct {
-	Choice  int
+	Err     error
 	CmdPath string
 }
 type BackMsg bool
 
+type item struct {
+	title, desc string
+}
+
+func (i item) Title() string       { return i.title }
+func (i item) Description() string { return i.desc }
+func (i item) FilterValue() string { return i.title }
 func returnBackCmd() tea.Cmd {
 	return func() tea.Msg {
 		return BackMsg(true)
 	}
 }
+func New(windowSize tea.WindowSizeMsg) model {
+	// Build up a list of the available commands
+	availableCmds := queen.BrowseCommands()
+
+	s := spinner.New()
+	s.Spinner = spinner.Dot
+	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+
+	items := make([]list.Item, len(availableCmds))
+	for i, path := range availableCmds {
+		items[i] = list.Item(item{title: path, desc: "more ta"})
+	}
+
+	m := model{
+		qfs:        &queen.FileSystem{Files: queen.GetFS()},
+		execOut:    "",
+		list:       list.New(items, list.NewDefaultDelegate(), 0, 0),
+		windowSize: windowSize,
+		spinner:    s,
+		uploading:  false,
+	}
+	m.list.SetSize(m.windowSize.Width, m.windowSize.Height)
+	m.list.Title = "Choose a command to schedule"
+	return m
+}
+
+func (m model) Init() tea.Cmd {
+	return m.spinner.Tick
+}
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+	var cmds []tea.Cmd
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.windowSize = msg
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q":
 			return m, tea.Quit
-		case "up", "k":
-			if m.cursor > 0 {
-				m.cursor--
-			}
-		case "down", "j":
-			if m.cursor < len(m.availableCmds)-1 {
-				m.cursor++
-			}
 		}
 
 		switch msg.Type {
 		case tea.KeyBackspace:
-			m.debug = "BACKMSG"
 			return m, returnBackCmd()
 
 		case tea.KeyEnter:
-			p := m.availableCmds[m.cursor]
-			m.execOut = m.qfs.UploadFileToCharm(p, p)
+			m.uploading = true
+			items := m.list.Items()
+			activeItem := items[m.list.Index()]
+			path := activeItem.FilterValue()
 
-			return m, func() tea.Msg {
-				return SelectMsg{Choice: m.cursor, CmdPath: m.availableCmds[m.cursor]}
-			}
+			return m, tea.Batch(spinner.Tick, m.sendFile(path, path)) // batch tick and upload together
 		}
+		m.list, cmd = m.list.Update(msg)
+		cmds = append(cmds, cmd)
 	}
-	return m, nil
+	if m.uploading == true {
+		m.spinner, cmd = m.spinner.Update(msg)
+		cmds = append(cmds, cmd)
+	}
+
+	return m, tea.Batch(cmds...)
+}
+
+func (m model) sendFile(from string, to string) tea.Cmd {
+	return func() tea.Msg {
+		loc, err := m.qfs.UploadFileToCharm(from, to)
+		if err != nil {
+			return SelectMsg{Err: err}
+		}
+		return SelectMsg{CmdPath: loc}
+	}
 }
 
 func (m model) View() string {
 	var s string
-	var c string
-
-	s += "Please choose a command:\n"
-	for i, choice := range m.availableCmds {
-
-		if i == m.cursor {
-			c = ">"
-		} else {
-			c = " "
-		}
-		s += fmt.Sprintf("%s %s\n", c, choice)
+	s = docStyle.Render(m.list.View())
+	if m.uploading == true {
+		s += m.spinner.View() + " uploading ... please wait."
 	}
-	s += fmt.Sprintf("%s", m.execOut)
-	s += fmt.Sprintf("%s", m.debug)
-	s += "Press q to exit"
 	return s
 }

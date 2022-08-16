@@ -1,7 +1,6 @@
 package queen
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -48,23 +47,21 @@ func GetFS() *charmfs.FS {
 	return cfs
 }
 
-func (cfs *FileSystem) UploadFileToCharm(local_path string, charm_path string) string {
-
-	status := fmt.Sprintf("Uploading file %s to %s ... ", local_path, charm_path)
-
+func (cfs *FileSystem) UploadFileToCharm(local_path string, charm_path string) (string, error) {
+	var out string
 	// Load the prepared file with commands and magic
 	file, err := os.Open(local_path)
 	if err != nil {
-		panic(err)
+		return out, err
 	}
 	defer file.Close()
 	// Write the prepared file to the DB
 	err = cfs.Files.WriteFile(charm_path, file)
 	if err != nil {
-		panic(err)
+		return out, err
 	}
-	status += "Success!\n"
-	return status
+	out = charm_path
+	return out, err
 }
 
 func BrowseCommands() []string {
