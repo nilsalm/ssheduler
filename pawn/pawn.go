@@ -23,6 +23,24 @@ func GetFS() *charmfs.FS {
 	return cfs
 }
 
+func (cfs *FileSystem) BrowseCommands() ([]string) {
+	// Since we're using fs.FS interfaces we can also do things like walk a tree
+	availableCmds, err = fs.WalkDir(cfs, "cmds/", func(path string, d fs.DirEntry, err error) ([]string, error) {
+		var files []string
+		fmt.Println(path)
+		if file.IsDir() == false {
+			files = append(files, "cmds/"+file.Name())
+		}
+		return files
+	})
+	if err != nil {
+		panic(err)
+	}
+		return availableCmds
+	}
+	
+}
+
 func (cfs *FileSystem) DownloadFileFromCharm(local_path string, charm_path string) {
 
 	fmt.Printf("Downloading file from %s to %s ... ", charm_path, local_path)

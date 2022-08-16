@@ -33,19 +33,19 @@ type item struct {
 func (i item) Title() string       { return i.title }
 func (i item) Description() string { return i.desc }
 func (i item) FilterValue() string { return i.title }
+
 func returnBackCmd() tea.Cmd {
 	return func() tea.Msg {
 		return BackMsg(true)
 	}
 }
 func New(windowSize tea.WindowSizeMsg) model {
-	// Build up a list of the available commands
-	availableCmds := queen.BrowseCommands()
-
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 
+	// Build up a list of the available commands
+	availableCmds := queen.BrowseCommands()
 	items := make([]list.Item, len(availableCmds))
 	for i, path := range availableCmds {
 		items[i] = list.Item(item{title: path, desc: "more ta"})
@@ -65,7 +65,7 @@ func New(windowSize tea.WindowSizeMsg) model {
 }
 
 func (m model) Init() tea.Cmd {
-	return m.spinner.Tick
+	return nil
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {

@@ -18,23 +18,15 @@ type model struct {
 	pawn       tea.Model
 	common     tea.Model
 	windowSize tea.WindowSizeMsg
+	state      State
 }
 
-// func main() {
-// 	cmd_filepath_synced := "/cmd"
-// 	cmd_filepath := "ssheduler_cmd.sh"
+type State int
 
-// 	initialModel := Model{
-
-// 		fs:   nil,
-// 		mode: Init,
-// 	}
-
-// 	initialModel.mode = Queen
-// 	initialModel.fs = &queen.FileSystem{Files: queen.GetFS()}
-
-// 	initialModel.fs.UploadFileToCharm(cmd_filepath, cmd_filepath_synced)
-// }
+const (
+	initializing State = iota
+	ready
+)
 
 func main() {
 	common.ReadConfig()
@@ -48,6 +40,7 @@ func main() {
 func initialModel() model {
 	mode := common.GetMode()
 	return model{
+		state:  initializing,
 		mode:   mode,
 		queen:  nil,
 		pawn:   nil,
@@ -68,6 +61,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.windowSize = msg
 		m.queen = queenui.New(m.windowSize)
 		m.pawn = pawnui.New(m.windowSize)
+		m.state = ready
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q":
@@ -107,6 +101,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
+	if m.state == initializing {
+		return "initializing...."
+	}
 	switch m.mode {
 	case common.Init:
 		return m.common.View()

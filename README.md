@@ -1,14 +1,31 @@
 # SSHeduler
 
 Async communication and command scheduling for remote devices (IoT).
-Master can add commands (basically shell scripts, potentially other stuff) to a queue which the slave pulls upon next wake and executes. 
+*Queen* can add commands (basically shell scripts, potentially other stuff) to a queue which the *Pawn* pulls upon next wake and executes.
 The idea is to be able to run commands and programs on devices that are not always online or that are behind some form of firewall or 4G-connected, so that you cant remote login to the device itself.
-
 
 | Short hand | Description                       |
 | ---------- | --------------------------------- |
 | M1         | The admin machine or main machine |
 | R1...n     | Remote machines, the followers    |
+
+## Code structure
+
+The main model returns either the TUI for the Queen or Pawn, or renders a simple choice between the two which is written to a config file. This logic is coded in `common.go` and the TUI for that is in `commonui.go`.
+
+The Queen UI then lets the user choose between **Scheduling a command** or **Registering a new Pawn**.
+The Pawn UI lets the user choose between **Manually executing a command**, **Linking this pawn to a queen** or **Running the pawn in autorun**.
+
+The logic/functionality is coded in `queen.go` and `pawn.go`, respectively.
+
+You can think of it as a tree that represents the three modes of operation:
+
+![docs/architecture.png](docs/architecture.png)
+
+
+
+
+
 
 
 ## MVP
