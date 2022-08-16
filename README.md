@@ -6,8 +6,8 @@ The idea is to be able to run commands and programs on devices that are not alwa
 
 | Short hand | Description                       |
 | ---------- | --------------------------------- |
-| M1         | The admin machine or main machine |
-| R1...n     | Remote machines, the followers    |
+| Queen      | The admin machine or main machine |
+| Pawn       | Remote machines, the followers    |
 
 ## Code structure
 
